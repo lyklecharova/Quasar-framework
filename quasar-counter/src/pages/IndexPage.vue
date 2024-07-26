@@ -1,5 +1,8 @@
 <template>
-  <q-page class="flex flex-center text-white">
+  <q-page
+    v-touch-pan.vertical.prevent.mouse="handlePan"
+    class="flex flex-center text-white"
+  >
     <div class="row">
       <q-input
         v-model="data.name"
@@ -11,15 +14,29 @@
     </div>
     <div class="row full-width items-center">
       <div class="col text-center">
-        <q-btn @click="decreaseCounter" icon="remove" size="xl" round />
+        <q-btn
+          @click="decreaseCounter"
+          v-touch-repeat:300:300:300:50
+          mouse="decreaseCounter"
+          icon="remove"
+          size="xl"
+          round
+        />
       </div>
       <div class="col text-center text-h2">{{ data.counter }}</div>
       <div class="col text-center">
-        <q-btn @click="increaseCounter" icon="add" size="xl" round />
+        <q-btn
+          @click="increaseCounter"
+          v-touch-repeat:300:300:300:50
+          mouse="increaseCounter"
+          icon="add"
+          size="xl"
+          round
+        />
       </div>
     </div>
     <div class="row">
-      <q-btn  @click="resetCounter" icon="restart_alt" size="xl" round />
+      <q-btn @click="resetCounter" icon="restart_alt" size="xl" round />
     </div>
   </q-page>
 </template>
@@ -32,23 +49,43 @@
 </style>
 <script setup>
 /* Shift + Alt + A - comment code */
+
 /* imports */
-import { reactive } from "vue";
+import { reactive, watch } from "vue";
+import { useQuasar } from 'quasar';
+
+/* quasar */
+
+const $q = useQuasar();
+
 /* data */
 const data = reactive({
   counter: 0,
   name: "",
 });
-/* counter methods */
-const increaseCounter = () => {
-  data.counter++;
-};
-const decreaseCounter = () => {
-    if(data.counter >0)
-  data.counter--;
-};
-const resetCounter = () => {
-    data.counter = 0;
-};
 
+const savedData = $q.localStorage.getItem('data');
+if(savedData) Object.assign(data, savedData);
+
+watch(data, (value) => {
+  $q.localStorage.set('data', value)
+});
+
+/* counter methods */
+  const increaseCounter = () => {
+    data.counter++;
+  };
+  const decreaseCounter = () => {
+    if (data.counter > 0) data.counter--;
+  };
+  const resetCounter = () => {
+    data.counter = 0;
+  };
+
+/* touch pan */
+  const handlePan = (e) => {
+    console.log(e.delta.y);
+    if (e.delta.y < 3) increaseCounter();
+    else decreaseCounter();
+  };
 </script>
